@@ -9,10 +9,10 @@ def get_proposal_voting_info(start_id, end_id):
     try:
         conn = MultiNodeJsonProvider(Cfg.NETWORK_ID)
         for id in range(start_id, end_id+1):
+            print("processing proposal id %s ..." % id)
             ret = conn.view_call(Cfg.NETWORK[Cfg.NETWORK_ID]["DAO_CONTRACT"], 
                 "get_proposal", ('{"id": %s}' % id).encode('utf-8'))
             json_str = "".join([chr(x) for x in ret["result"]])
-            # print(json_str)
             info.append(json.loads(json_str))
             time.sleep(0.5)
     except MultiNodeJsonProviderError as e:
@@ -31,9 +31,14 @@ def counting_voters(start_id, end_id):
                 counting[voter] += 1
             else:
                 counting[voter] = 1
-    return counting
+
+    # sorting dict
+    sorted_voters = sorted(counting.items(), key=lambda x: x[1], reverse=True)
+
+    return sorted_voters
 
 if __name__ == '__main__':
-    # a = get_proposal_voting_info(294)
     counting = counting_voters(268, 294)
-    print(counting)
+    
+    for item in counting:
+        print("%s : %d" % (item[0], item[1]))
